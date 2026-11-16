@@ -32,7 +32,9 @@
 
 iOS는 React Native를 미리 빌드된 파일로 받지 않고 소스에서 빌드합니다(`app.json`의 `expo-build-properties` → `ios.buildReactNativeFromSource`). 회사망이나 VPN에서 `pod install`이 `React-Core-prebuilt` 다운로드에서 멈추는 문제를 피하려는 설정입니다. 대신 Xcode 첫 빌드가 10~20분 더 걸립니다. 다운로드가 잘 되는 환경이면 이 값을 지우고 prebuild를 다시 실행하면 빨라집니다.
 
-JavaScript 엔진 Hermes도 같은 이유로 Maven에서 내려받지 않고, GitHub의 `facebook/hermes` 소스(React Native가 정한 태그)를 받아 빌드합니다. `plugins/with-ios-hermes-from-source.js`가 `Podfile.properties.json`에 `ios.buildHermesFromSource`를 넣고, `Podfile`에서 `RCT_BUILD_HERMES_FROM_SOURCE=true`를 켭니다. 이 빌드에는 **CMake**가 필요합니다(`brew install cmake`). 끄려면 `app.json`의 plugins에서 이 플러그인을 `["./plugins/with-ios-hermes-from-source", { "enabled": false }]`로 바꾸고 prebuild를 다시 실행하세요.
+JavaScript 엔진 Hermes도 같은 이유로 Maven에서 내려받지 않고, GitHub의 `facebook/hermes` 소스(React Native가 정한 태그)를 받아 빌드합니다. `plugins/with-ios-hermes-from-source.js`가 `Podfile.properties.json`에 `ios.buildHermesFromSource`를 넣고, `Podfile`에서 `RCT_BUILD_HERMES_FROM_SOURCE=true`를 켭니다. 이 빌드에는 **CMake**가 필요합니다(`brew install cmake`).
+
+이 두 소스 빌드 설정은 **로컬 Mac에서만** 적용됩니다. GitHub Actions(`app-release.yml`)와 EAS Build(`eas.json`)에서는 `pod install` 전에 `RCT_USE_RN_DEP=1`, `RCT_USE_PREBUILT_RNCORE=1`, `RCT_BUILD_HERMES_FROM_SOURCE=false`를 넣어 미리 빌드된 파일을 씁니다. `Podfile`이 이 값들을 `||=`로 정해서, 미리 넣은 환경변수가 우선합니다. 로컬에서도 빠르게 빌드하고 싶으면 같은 환경변수를 붙여 `pod install`을 실행하세요. 끄려면 `app.json`의 plugins에서 이 플러그인을 `["./plugins/with-ios-hermes-from-source", { "enabled": false }]`로 바꾸고 prebuild를 다시 실행하세요.
 
 두 도구 모두 개발용 JS 번들을 받아오려면 터미널에서 `npx expo start`를 먼저 켜 두세요. 또는 `npm run android` / `npm run ios`로 빌드와 실행을 한 번에 할 수 있습니다.
 

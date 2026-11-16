@@ -59,8 +59,16 @@ jobs:
         with:
           xcode-version: latest-stable
       - run: npm ci
-      - name: Install CocoaPods dependencies
+      # The repo builds React Native and Hermes from source (ios/Podfile.properties.json) so that
+      # pod install works on networks that block Maven. GitHub's runners can reach Maven, so they
+      # use the prebuilt binaries instead: about 16 minutes instead of 80. The Podfile sets these
+      # with ||=, so values exported here win.
+      - name: Install CocoaPods dependencies (prebuilt React Native and Hermes)
         working-directory: ios
+        env:
+          RCT_USE_RN_DEP: '1'
+          RCT_USE_PREBUILT_RNCORE: '1'
+          RCT_BUILD_HERMES_FROM_SOURCE: 'false'
         run: pod install
       - name: Build for iOS Simulator (unsigned)
         working-directory: ios

@@ -6,16 +6,33 @@
   "build": {
     "preview": {
       "distribution": "internal",
-      "android": { "buildType": "apk" },
-      "ios": { "simulator": false }
+      "android": {
+        "buildType": "apk"
+      },
+      "ios": {
+        "simulator": false
+      },
+      "env": {
+        "RCT_USE_RN_DEP": "1",
+        "RCT_USE_PREBUILT_RNCORE": "1",
+        "RCT_BUILD_HERMES_FROM_SOURCE": "false"
+      }
     },
     "production": {
-      "autoIncrement": true
+      "autoIncrement": true,
+      "env": {
+        "RCT_USE_RN_DEP": "1",
+        "RCT_USE_PREBUILT_RNCORE": "1",
+        "RCT_BUILD_HERMES_FROM_SOURCE": "false"
+      }
     }
   },
   "submit": {
     "production": {
-      "android": { "track": "internal", "releaseStatus": "draft" }
+      "android": {
+        "track": "internal",
+        "releaseStatus": "draft"
+      }
     }
   }
 }
