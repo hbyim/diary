@@ -67,6 +67,20 @@
 - 스크린샷(6.7"/6.5" iPhone, Android 휴대폰), 앱 설명, 지원 URL
 - 사진 권한 문구는 `app.json`의 `expo-image-picker` 설정에 있습니다.
 
+### 웹 체험판 (GitHub Pages)
+
+`main`에 푸시될 때마다 `.github/workflows/pages.yml`이 웹 버전을 빌드해 `gh-pages` 브랜치에 올리고, https://hbyim.github.io/diary/ 에서 열립니다. 주소가 열리지 않으면 저장소 Settings → Pages에서 Source를 **Deploy from a branch**, 브랜치를 **gh-pages / (root)** 로 지정하세요. 저장소 이름을 바꾸면 `app.json`의 `experiments.baseUrl`도 함께 바꿔야 합니다.
+
+웹 버전은 휴대폰 앱과 이렇게 다릅니다.
+
+| 기능 | 앱 | 웹 |
+|---|---|---|
+| 저장 | SQLite (`db.ts`) | 브라우저 localStorage (`db.web.ts`), 약 5MB |
+| 비밀번호 해시 | Keychain/Keystore (`secure-kv.ts`) | localStorage (`secure-kv.web.ts`) |
+| 사진 | 앱 폴더에 복사 | 900px로 줄여 기록 안에 저장 (`photos.web.ts`) |
+| 내보내기 | 공유 시트 | 파일 다운로드 (`export-file.web.ts`) |
+| 알림 | 있음 | 없음 |
+
 ## 4. 알아둘 점
 
 - **백업:** iOS는 앱 문서 폴더가 iCloud 기기 백업에 포함되고, Android는 자동 백업에 DB가 포함될 수 있습니다. 단 비밀번호 해시는 Keystore 특성상 복원되지 않을 수 있어서, 복원 후 잠금이 풀리지 않으면 재설치 시 새 비밀번호를 설정해야 합니다. 이 부분은 실제 기기 복원으로 검증이 필요합니다.

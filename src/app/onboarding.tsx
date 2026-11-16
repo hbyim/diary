@@ -1,6 +1,6 @@
-import { router } from 'expo-router';
+import { Redirect, router } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, View } from 'react-native';
 
 import { useApp } from '@/app-context';
 import { Button, Card, Row, Screen, Stepper, T, Toggle } from '@/components/ui';
@@ -18,12 +18,14 @@ export default function Onboarding() {
   const [start, setStart] = useState(today);
   const [hour, setHour] = useState(22);
   const [minute, setMinute] = useState(30);
-  const [notify, setNotify] = useState(true);
+  const [notify, setNotify] = useState(Platform.OS !== 'web');
   const [mode, setMode] = useState<QuestionMode>('daily');
 
   const end = addDays(addYears(start, CYCLE_YEARS), -1);
   const total = diffDays(start, end) + 1;
   const jan1 = `${yearOf(today)}-01-01`;
+
+  const [finished, setFinished] = useState(false);
 
   const shiftTime = (d: number) => {
     const t = (((hour * 60 + minute + d) % 1440) + 1440) % 1440;
@@ -35,6 +37,7 @@ export default function Onboarding() {
     if (!settings.lockEnabled) await clearPasscode(); // drop any passcode left in the keychain by a previous install
     let notifyOk = notify;
     if (notify) notifyOk = await ensurePermission().catch(() => false);
+    setFinished(true);
     updateSettings({
       startDate: start,
       notifyEnabled: notifyOk,
@@ -44,8 +47,12 @@ export default function Onboarding() {
       onboarded: true,
     });
     await rescheduleAll().catch(() => {});
-    setTimeout(() => router.push({ pathname: '/write', params: { date: today } }), 50);
+    router.replace('/');
+    router.push({ pathname: '/write', params: { date: today } });
   };
+
+  // Reaching onboarding after it is done (e.g. a stale link) goes home.
+  if (settings.onboarded && !finished) return <Redirect href="/" />;
 
   return (
     <Screen edges={['top', 'bottom']} contentStyle={{ paddingTop: space.xl, gap: space.lg, flexGrow: 1 }}>
@@ -86,9 +93,9 @@ export default function Onboarding() {
         </>
       ) : step === 1 ? (
         <>
-          <T kind="display" style={{ lineHeight: 42 }}>하루 중 언제{'\n'}쓰고 싶나요?</T>
-          <Row label="매일 쓰기 알림" right={<Toggle value={notify} onChange={setNotify} />} />
-          {notify ? (
+          <T kind="display" style={{ lineHeight: 42 }}>{Platform.OS === 'web' ? '어떻게\n쓰고 싶나요?' : '하루 중 언제\n쓰고 싶나요?'}</T>
+          {Platform.OS !== 'web' ? <Row label="매일 쓰기 알림" right={<Toggle value={notify} onChange={setNotify} />} /> : null}
+          {notify && Platform.OS !== 'web' ? (
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
               <T>알림 시간</T>
               <Stepper label={`${pad2(hour)}:${pad2(minute)}`} onMinus={() => shiftTime(-30)} onPlus={() => shiftTime(30)} />
@@ -116,7 +123,11 @@ export default function Onboarding() {
               />
             }
           />
-          <T kind="small">모든 기록은 이 기기 안에만 저장되고, 회원가입 없이 바로 시작해요.</T>
+          <T kind="small">
+            {Platform.OS === 'web'
+              ? '웹 체험판이에요. 기록은 이 브라우저에만 저장되고, 회원가입 없이 바로 시작해요.'
+              : '모든 기록은 이 기기 안에만 저장되고, 회원가입 없이 바로 시작해요.'}
+          </T>
           <View style={{ flex: 1 }} />
           <Button title="첫 번째 칸 쓰기" onPress={finish} />
           <Button title="이전" variant="ghost" onPress={() => setStep(1)} />

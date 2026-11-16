@@ -1,19 +1,18 @@
-import { File, Paths } from 'expo-file-system';
 import { router } from 'expo-router';
-import * as Sharing from 'expo-sharing';
 import { useState } from 'react';
-import { TextInput, View } from 'react-native';
+import { Platform, TextInput, View } from 'react-native';
 
 import { useApp } from '@/app-context';
 import { Button, Card, Row, Screen, Section, Stepper, T, Toggle } from '@/components/ui';
 import { countReplies, exportAll, getAllEntries, wipeAll } from '@/lib/db';
 import { CYCLE_YEARS, addDays, addYears, pad2 } from '@/lib/dates';
-import { suppressNextLock } from '@/lib/lock-events';
+import { shareTextFile } from '@/lib/export-file';
 import { ensurePermission, rescheduleAll } from '@/lib/notifications';
 import { clearPasscode } from '@/lib/passcode';
 import { deleteAllPhotos } from '@/lib/photos';
 import { radius, space, useColors } from '@/theme';
 
+const IS_WEB = Platform.OS === 'web';
 const RESET_WORD = '초기화';
 
 export default function MeScreen() {
@@ -35,16 +34,8 @@ export default function MeScreen() {
 
   const exportJson = async () => {
     try {
-      const file = new File(Paths.cache, `naite-export-${new Date().toISOString().slice(0, 10)}.json`);
-      if (file.exists) file.delete();
-      file.create();
-      file.write(JSON.stringify(exportAll(), null, 2));
-      if (await Sharing.isAvailableAsync()) {
-        suppressNextLock();
-        await Sharing.shareAsync(file.uri, { mimeType: 'application/json', dialogTitle: '나이테 기록 내보내기' });
-      } else {
-        setMsg(`파일을 만들었어요: ${file.uri}`);
-      }
+      const name = `naite-export-${new Date().toISOString().slice(0, 10)}.json`;
+      setMsg(await shareTextFile(name, JSON.stringify(exportAll(), null, 2), 'application/json'));
     } catch (e) {
       setMsg(`내보내기에 실패했어요: ${(e as Error).message}`);
     }
@@ -64,6 +55,13 @@ export default function MeScreen() {
         </T>
       </Card>
 
+      {Platform.OS === 'web' ? (
+        <Card>
+          <T kind="small">웹 체험판이에요. 기록은 이 브라우저에만 저장되고, 알림은 앱에서만 받을 수 있어요.</T>
+        </Card>
+      ) : null}
+
+      {Platform.OS !== 'web' ? (
       <Section title="알림">
         <Row
           label="매일 쓰기 알림"
@@ -103,6 +101,7 @@ export default function MeScreen() {
         />
         <Row label="나의 연례 행사" onPress={() => router.push('/anniversaries')} />
       </Section>
+      ) : null}
 
       <Section title="질문">
         <Row
@@ -127,7 +126,11 @@ export default function MeScreen() {
       </Section>
 
       <Section title="데이터">
-        <Row label="기록 내보내기 (JSON)" hint="모든 기록·답장·설정을 파일 하나로 저장해요. 사진은 포함되지 않아요." onPress={exportJson} />
+        <Row
+          label="기록 내보내기 (JSON)"
+          hint={`모든 기록·답장·설정을 파일 하나로 ${IS_WEB ? '내려받아요' : '저장해요'}. 사진은 포함되지 않아요.`}
+          onPress={exportJson}
+        />
         <Row label="데이터 초기화" hint="모든 기록과 사진을 지우고 처음부터 시작해요" onPress={() => setResetOpen((v) => !v)} />
         {resetOpen ? (
           <Card>
@@ -159,7 +162,7 @@ export default function MeScreen() {
 
       {msg ? <T kind="small" color={c.accent}>{msg}</T> : null}
       <T kind="small" style={{ textAlign: 'center', marginTop: space.lg }}>
-        나이테 1.0 · 모든 기록은 이 기기 안에만 저장돼요
+        나이테 1.0 · 모든 기록은 {IS_WEB ? '이 브라우저' : '이 기기'} 안에만 저장돼요
       </T>
     </Screen>
   );

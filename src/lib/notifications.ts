@@ -5,7 +5,7 @@ import { addDays, dayOf, monthOf, type MonthDay } from './dates';
 import { getAnniversaries } from './db';
 import { loadSettings } from './settings';
 
-Notifications.setNotificationHandler({
+if (Platform.OS !== 'web') Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowBanner: true,
     shouldShowList: true,
@@ -17,6 +17,7 @@ Notifications.setNotificationHandler({
 const CHANNEL = 'daily';
 
 export async function ensurePermission(): Promise<boolean> {
+  if (Platform.OS === 'web') return false;
   if (Platform.OS === 'android') {
     await Notifications.setNotificationChannelAsync(CHANNEL, {
       name: '매일 기록 알림',

@@ -7,7 +7,11 @@
     "icon": "./assets/images/icon.png",
     "scheme": "naite",
     "userInterfaceStyle": "automatic",
-    "platforms": ["ios", "android"],
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ],
     "ios": {
       "bundleIdentifier": "com.hbyim.naite",
       "buildNumber": "1",
@@ -59,7 +63,18 @@
     ],
     "experiments": {
       "typedRoutes": true,
-      "reactCompiler": true
+      "reactCompiler": true,
+      "baseUrl": "/diary"
+    },
+    "web": {
+      "output": "single",
+      "favicon": "./assets/images/favicon.png",
+      "name": "나이테",
+      "shortName": "나이테",
+      "lang": "ko",
+      "themeColor": "#2C5A8E",
+      "backgroundColor": "#F3F5F6",
+      "description": "같은 날짜 위에 다섯 해를 겹쳐 쓰는 다이어리"
     }
   }
 }

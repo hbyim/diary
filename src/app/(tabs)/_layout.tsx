@@ -1,7 +1,9 @@
+import { Redirect } from 'expo-router';
 import { Tabs } from 'expo-router/js-tabs';
 import type { ColorValue } from 'react-native';
 import Svg, { Circle, Path, Rect } from 'react-native-svg';
 
+import { useApp } from '@/app-context';
 import { useColors } from '@/theme';
 
 function TabIcon({ name, color }: { name: 'today' | 'rings' | 'discover' | 'me'; color: ColorValue }) {
@@ -35,6 +37,8 @@ function TabIcon({ name, color }: { name: 'today' | 'rings' | 'discover' | 'me';
 
 export default function TabsLayout() {
   const c = useColors();
+  const { settings } = useApp();
+  if (!settings.onboarded) return <Redirect href="/onboarding" />;
   return (
     <Tabs
       screenOptions={{

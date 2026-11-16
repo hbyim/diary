@@ -58,9 +58,12 @@ export default function WriteScreen() {
 
   const hasContent = text.trim().length > 0 || tags.length > 0 || mood !== null || photo !== null;
 
+  const [saveError, setSaveError] = useState<string | null>(null);
+
   const persist = () => {
     if (!allowed || !hasContent) return false;
-    saveEntry({
+    try {
+      saveEntry({
       date,
       kind: isMemo ? 'memo' : 'entry',
       question,
@@ -68,8 +71,14 @@ export default function WriteScreen() {
       mood: isMemo ? null : mood,
       tags: isMemo ? [] : tags,
       photo: isMemo ? null : photo,
-      late: date < today,
-    });
+        late: date < today,
+      });
+    } catch {
+      // Only the web build can run out of space (browser storage holds the photos).
+      setSaveError('저장 공간이 가득 찼어요. 사진을 빼거나 기록을 내보낸 뒤 정리해 주세요.');
+      return false;
+    }
+    setSaveError(null);
     dirty.current = false;
     setSavedAt(Date.now());
     bump();
@@ -201,7 +210,9 @@ export default function WriteScreen() {
             accessibilityLabel="본문"
           />
           <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-            <T kind="small">{savedAt ? '자동 저장됨' : existing ? '저장된 기록' : ' '}</T>
+            <T kind="small" color={saveError ? c.danger : undefined}>
+              {saveError ?? (savedAt ? '자동 저장됨' : existing ? '저장된 기록' : ' ')}
+            </T>
             <T kind="mono" color={text.length > (isMemo ? MEMO_LIMIT : SOFT_LIMIT) ? c.years[0] : c.ink3}>
               {text.length} / {isMemo ? MEMO_LIMIT : SOFT_LIMIT}
             </T>

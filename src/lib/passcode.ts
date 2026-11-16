@@ -1,11 +1,12 @@
 import * as Crypto from 'expo-crypto';
-import * as SecureStore from 'expo-secure-store';
+
+import { secureDelete, secureGet, secureSet } from './secure-kv';
 
 /**
  * 4-digit app passcode.
  *
  * Only a salted, iterated SHA-256 hash is stored, and it is stored in the
- * platform keystore (iOS Keychain / Android Keystore via expo-secure-store),
+ * platform keystore (iOS Keychain / Android Keystore, see secure-kv.ts),
  * never in the SQLite file. Failed attempts trigger an escalating cooldown.
  */
 export const PASSCODE_LENGTH = 4;
@@ -27,12 +28,8 @@ async function derive(pin: string, salt: string, iter: number): Promise<string> 
   return h;
 }
 
-const opts: SecureStore.SecureStoreOptions = {
-  keychainAccessible: SecureStore.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
-};
-
 export async function hasPasscode(): Promise<boolean> {
-  return (await SecureStore.getItemAsync(HASH_KEY, opts)) !== null;
+  return (await secureGet(HASH_KEY)) !== null;
 }
 
 export async function setPasscode(pin: string) {
@@ -40,18 +37,18 @@ export async function setPasscode(pin: string) {
   const salt = toHex(Crypto.getRandomBytes(16));
   const hash = await derive(pin, salt, ITERATIONS);
   const value: Stored = { salt, hash, iter: ITERATIONS };
-  await SecureStore.setItemAsync(HASH_KEY, JSON.stringify(value), opts);
-  await SecureStore.deleteItemAsync(FAIL_KEY, opts);
+  await secureSet(HASH_KEY, JSON.stringify(value));
+  await secureDelete(FAIL_KEY);
 }
 
 export async function clearPasscode() {
-  await SecureStore.deleteItemAsync(HASH_KEY, opts);
-  await SecureStore.deleteItemAsync(FAIL_KEY, opts);
+  await secureDelete(HASH_KEY);
+  await secureDelete(FAIL_KEY);
 }
 
 async function readFails(): Promise<Fails> {
   try {
-    const raw = await SecureStore.getItemAsync(FAIL_KEY, opts);
+    const raw = await secureGet(FAIL_KEY);
     if (raw) return JSON.parse(raw);
   } catch {}
   return { count: 0, until: 0 };
@@ -74,16 +71,16 @@ export async function verifyPasscode(pin: string): Promise<VerifyResult> {
   const f = await readFails();
   if (f.until > Date.now()) return { ok: false, waitMs: f.until - Date.now(), attempts: f.count };
 
-  const raw = await SecureStore.getItemAsync(HASH_KEY, opts);
+  const raw = await secureGet(HASH_KEY);
   if (!raw) return { ok: true };
   const stored: Stored = JSON.parse(raw);
   const hash = await derive(pin, stored.salt, stored.iter);
   if (hash === stored.hash) {
-    await SecureStore.deleteItemAsync(FAIL_KEY, opts);
+    await secureDelete(FAIL_KEY);
     return { ok: true };
   }
   const count = f.count + 1;
   const wait = cooldownFor(count);
-  await SecureStore.setItemAsync(FAIL_KEY, JSON.stringify({ count, until: Date.now() + wait }), opts);
+  await secureSet(FAIL_KEY, JSON.stringify({ count, until: Date.now() + wait }));
   return { ok: false, waitMs: wait, attempts: count };
 }
