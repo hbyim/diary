@@ -1,3 +1,5 @@
+import { describe, expect, it } from '@jest/globals';
+
 import { consecutiveRun, firstLine, normalizeTag, overlapWords, repeatedTags, tokenize } from '../analysis';
 
 describe('tokenize', () => {
