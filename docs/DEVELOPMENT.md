@@ -67,6 +67,20 @@
 - 스크린샷(6.7"/6.5" iPhone, Android 휴대폰), 앱 설명, 지원 URL
 - 사진 권한 문구는 `app.json`의 `expo-image-picker` 설정에 있습니다.
 
+### 설치 파일 (GitHub Releases)
+
+`.github/workflows/app-release.yml`이 GitHub의 빌드 서버에서 두 가지를 만듭니다. Expo 계정이나 스토어 계정은 필요 없습니다.
+
+| 파일 | 내용 |
+|---|---|
+| `naite-<버전>-android.apk` | Android 폰에 바로 설치할 수 있는 APK (React Native 기본 디버그 키로 서명) |
+| `naite-<버전>-ios-simulator.zip` | Mac의 iOS 시뮬레이터용 앱. Apple 서명이 없어서 실제 iPhone에는 설치되지 않음 |
+
+- PR을 열면 두 파일을 빌드만 하고, 실행 결과의 Artifacts에 첨부합니다.
+- Actions → **App builds (GitHub Releases)** → Run workflow(main)를 실행하거나 `v1.0.1` 같은 태그를 푸시하면 Release를 만들어 파일을 올립니다. 수동 실행의 태그 이름은 `app.json`의 `version`을 따르므로, 새 Release를 만들려면 버전을 먼저 올리세요.
+- APK는 Play 스토어 앱과 서명 키가 다릅니다. 나중에 Play 스토어 버전을 설치하려면 APK 버전을 먼저 지워야 합니다.
+- 실제 iPhone에 설치하려면 Apple Developer 계정으로 TestFlight를 거쳐야 합니다(아래 EAS 절차).
+
 ### 웹 체험판 (GitHub Pages)
 
 `main`에 푸시될 때마다 `.github/workflows/pages.yml`이 웹 버전을 빌드해 `gh-pages` 브랜치에 올리고, https://hbyim.github.io/diary/ 에서 열립니다. 주소가 열리지 않으면 저장소 Settings → Pages에서 Source를 **Deploy from a branch**, 브랜치를 **gh-pages / (root)** 로 지정하세요. 저장소 이름을 바꾸면 `app.json`의 `experiments.baseUrl`도 함께 바꿔야 합니다.

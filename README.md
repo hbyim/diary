@@ -2,6 +2,7 @@
 
 같은 날짜 위에 다섯 해를 겹쳐 쓰는 다이어리 앱(iOS / Android). 오늘을 기록하면 1년 전·2년 전·3년 전의 같은 날이 바로 아래에 보입니다.
 
+- **앱 내려받기: [Releases](https://github.com/hbyim/diary/releases/latest)** (Android APK, iOS 시뮬레이터 빌드)
 - **웹 체험판: https://hbyim.github.io/diary/** (기록은 그 브라우저에만 저장, 알림 없음)
 - 기획: [`docs/flipbook.html`](docs/flipbook.html) (UI/UX 플립북)
 - 개발·DB·배포 정리: [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md)
