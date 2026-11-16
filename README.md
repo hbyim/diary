@@ -13,6 +13,9 @@ Expo SDK 58 · React Native 0.88 · TypeScript · Expo Router · expo-sqlite (�
 
 ## 개발
 
+Android Studio와 Xcode용 프로젝트는 `android/`, `ios/`에 있습니다. 여는 방법은 [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) 2절을 보세요.
+
+
 ```bash
 npm install
 npx expo run:ios       # 또는 npx expo run:android (개발 빌드, Xcode/Android Studio 필요)
