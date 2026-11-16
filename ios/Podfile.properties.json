@@ -3,6 +3,7 @@
   "EX_DEV_CLIENT_NETWORK_INSPECTOR": "true",
   "expo.inlineModules.watchedDirectories": "[]",
   "expo.inlineModules.xcodeProjectTargets": "{\"mainTarget\":\"app\",\"targets\":[]}",
+  "ios.buildHermesFromSource": "true",
   "ios.forceStaticLinking": "[]",
   "apple.privacyManifestAggregationEnabled": "true",
   "ios.buildReactNativeFromSource": "true",
