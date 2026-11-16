@@ -21,7 +21,20 @@
 | 06 날씨·동네 자동 기록 | 미구현 | 위치 권한과 날씨 API가 필요해서 제외 |
 | 종이 다이어리 사진 가져오기 | 미구현 | |
 
-## 2. 데이터베이스
+## 2. 네이티브 프로젝트 (Android Studio / Xcode)
+
+`android/`와 `ios/`는 `npx expo prebuild`로 만든 네이티브 프로젝트이고, 저장소에 커밋돼 있습니다.
+
+| 도구 | 여는 방법 |
+|---|---|
+| Android Studio | `npm install` 후 `android/` 폴더를 열기. Gradle 동기화가 끝나면 ▶ 실행 |
+| Xcode (Mac) | `npm install` → `cd ios && pod install` → `ios/app.xcworkspace` 열기 (`.xcodeproj`가 아니라 `.xcworkspace`). 실기기 실행은 Signing & Capabilities에서 Team을 고르기 |
+
+두 도구 모두 개발용 JS 번들을 받아오려면 터미널에서 `npx expo start`를 먼저 켜 두세요. 또는 `npm run android` / `npm run ios`로 빌드와 실행을 한 번에 할 수 있습니다.
+
+`app.json`에서 이름·아이콘·권한·플러그인 같은 네이티브 설정을 바꿨다면 `npx expo prebuild --platform all --no-install`로 프로젝트 파일에 반영하고 그 변경을 커밋하세요. 네이티브 폴더를 직접 고친 뒤에는 `--clean`을 쓰지 마세요. 직접 고친 내용이 지워집니다.
+
+## 3. 데이터베이스
 
 서버 DB는 없습니다. 모든 기록은 기기 안의 SQLite 파일 `naite.db`(expo-sqlite)에 저장됩니다. 스키마는 `src/lib/db.ts`의 `MIGRATIONS` 배열로 관리하고 `PRAGMA user_version`으로 버전을 추적합니다. 스키마를 바꿀 때는 기존 항목을 고치지 말고 배열 끝에 새 마이그레이션을 추가하세요.
 
@@ -37,7 +50,7 @@
 - 비밀번호는 DB에 넣지 않습니다. 솔트를 붙여 SHA-256을 300번 반복한 해시만 iOS Keychain / Android Keystore(expo-secure-store)에 저장합니다. 5번 틀리면 30초부터 최대 15분까지 대기 시간이 늘어납니다.
 - 비밀번호를 잊으면 복구할 수 없습니다(서버가 없어서). 앱을 삭제 후 재설치하면 새로 시작됩니다.
 
-## 3. 배포 (EAS)
+## 4. 배포 (EAS)
 
 빌드·서명·스토어 제출은 Expo의 EAS로 합니다. 설정은 `eas.json`, 실행은 GitHub Actions의 **Release** 워크플로(수동 실행)입니다. 아래는 계정 소유자만 할 수 있어서 직접 해야 하는 일입니다.
 
@@ -95,14 +108,14 @@
 | 내보내기 | 공유 시트 | 파일 다운로드 (`export-file.web.ts`) |
 | 알림 | 있음 | 없음 |
 
-## 4. 알아둘 점
+## 5. 알아둘 점
 
 - **백업:** iOS는 앱 문서 폴더가 iCloud 기기 백업에 포함되고, Android는 자동 백업에 DB가 포함될 수 있습니다. 단 비밀번호 해시는 Keystore 특성상 복원되지 않을 수 있어서, 복원 후 잠금이 풀리지 않으면 재설치 시 새 비밀번호를 설정해야 합니다. 이 부분은 실제 기기 복원으로 검증이 필요합니다.
 - **알림:** 매일 알림 1개 + 연례 행사마다 매년 알림 1개를 예약합니다. iOS는 예약 알림이 64개로 제한되므로 연례 행사는 60개 이내로 두세요.
 - **날짜 기준:** 새벽 3시 전에 쓰면 전날 칸에 들어갑니다(`DAY_CUTOFF_HOUR`).
 - **2월 29일:** 윤년에만 칸이 생기고, 나이테 원에서는 2월 28일 자리에 함께 표시됩니다.
 
-## 5. 검증 상태
+## 6. 검증 상태
 
 - `npm run typecheck`, `npm run lint`, `npm test`(날짜·사이클·잠금·질문·텍스트 분석 22개) 통과
 - `npx expo export --platform ios --platform android` 번들 생성 통과
