@@ -8,11 +8,13 @@ import { Card, Chip, Screen, T } from '@/components/ui';
 import { getEntriesBetween } from '@/lib/db';
 import { addDays, diffDays, formatKo, mdOf, weekdayKo, yearOf, BACKFILL_DAYS, type ISODate } from '@/lib/dates';
 import { pageCells, questionFor, relativeYears, type Cell } from '@/lib/diary';
+import { MAX_WIDTH, useLayout } from '@/hooks/use-layout';
 import { space, useColors } from '@/theme';
 
 export default function TodayScreen() {
   const { today, start, settings } = useApp();
   const c = useColors();
+  const { isWide, columnGap } = useLayout();
   const params = useLocalSearchParams<{ date?: string }>();
   const [navDate, setNavDate] = useNavDate(params.date);
   const date = navDate ?? today;
@@ -49,46 +51,67 @@ export default function TodayScreen() {
   ];
   const todayYear = yearOf(today);
 
+  const header = (
+    <View style={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between' }}>
+      <Pressable onLongPress={() => setNavDate(null)} accessibilityHint="길게 누르면 오늘로 돌아가요">
+        <T kind="small">
+          {yearOf(date)} · {weekdayKo(date)}요일{date === today ? ' · 오늘' : ''}
+        </T>
+        <T kind="display">{formatKo(date)}</T>
+      </Pressable>
+      <View style={{ flexDirection: 'row', gap: 4, alignItems: 'center' }}>
+        {date !== today ? <Chip label="오늘로" onPress={() => setNavDate(null)} /> : null}
+        <NavBtn label="‹" a11y="어제" onPress={() => go(-1)} />
+        <NavBtn label="›" a11y="내일" onPress={() => go(1)} />
+      </View>
+    </View>
+  );
+
+  const missedBanner =
+    date === today && missed > 0 ? (
+      <Pressable onPress={() => router.push('/calendar')}>
+        <Card style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+          <T kind="small" style={{ flex: 1 }}>
+            지난 {BACKFILL_DAYS}일 중 {missed}일이 비어 있어요. 지금 채울 수 있어요.
+          </T>
+          <T color={c.accent} style={{ fontWeight: '600' }}>달력 ›</T>
+        </Card>
+      </Pressable>
+    ) : null;
+
+  const cellViews = (list: Cell[], lines: number) =>
+    list.map((cell) => (
+      <CellView key={cell.k} cell={cell} color={c.years[cell.k]} todayYear={todayYear} today={today} lines={lines} />
+    ));
+
+  // Wide screens: this year on the left, the other years stacked on the right.
+  if (isWide) {
+    const [current, ...others] = ordered;
+    return (
+      <Screen maxWidth={MAX_WIDTH.wide}>
+        <View {...pan.panHandlers} style={{ flexDirection: 'row', gap: columnGap, alignItems: 'flex-start' }}>
+          <View style={{ flex: 1, gap: space.md, minWidth: 0 }}>
+            {header}
+            <T kind="question" style={{ fontSize: 20, lineHeight: 30 }}>{question}</T>
+            {current ? cellViews([current], 6) : null}
+            {missedBanner}
+          </View>
+          <View style={{ flex: 1.2, gap: space.md, minWidth: 0 }}>
+            <T kind="label">다른 해의 {formatKo(date)}</T>
+            {cellViews(others, 4)}
+          </View>
+        </View>
+      </Screen>
+    );
+  }
+
   return (
     <Screen>
       <View {...pan.panHandlers} style={{ gap: space.md }}>
-        <View style={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between' }}>
-          <Pressable
-            onLongPress={() => setNavDate(null)}
-            accessibilityHint="길게 누르면 오늘로 돌아가요">
-            <T kind="small">
-              {yearOf(date)} · {weekdayKo(date)}요일{date === today ? ' · 오늘' : ''}
-            </T>
-            <T kind="display">{formatKo(date)}</T>
-          </Pressable>
-          <View style={{ flexDirection: 'row', gap: 4, alignItems: 'center' }}>
-            {date !== today ? (
-              <Chip
-                label="오늘로"
-                onPress={() => setNavDate(null)}
-              />
-            ) : null}
-            <NavBtn label="‹" a11y="어제" onPress={() => go(-1)} />
-            <NavBtn label="›" a11y="내일" onPress={() => go(1)} />
-          </View>
-        </View>
-
+        {header}
         <T kind="question">{question}</T>
-
-        {ordered.map((cell) => (
-          <CellView key={cell.k} cell={cell} color={c.years[cell.k]} todayYear={todayYear} today={today} />
-        ))}
-
-        {date === today && missed > 0 ? (
-          <Pressable onPress={() => router.push('/calendar')}>
-            <Card style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-              <T kind="small" style={{ flex: 1 }}>
-                지난 {BACKFILL_DAYS}일 중 {missed}일이 비어 있어요. 지금 채울 수 있어요.
-              </T>
-              <T color={c.accent} style={{ fontWeight: '600' }}>달력 ›</T>
-            </Card>
-          </Pressable>
-        ) : null}
+        {cellViews(ordered, 2)}
+        {missedBanner}
       </View>
     </Screen>
   );
@@ -103,7 +126,19 @@ function NavBtn({ label, a11y, onPress }: { label: string; a11y: string; onPress
   );
 }
 
-function CellView({ cell, color, todayYear, today }: { cell: Cell; color: string; todayYear: number; today: ISODate }) {
+function CellView({
+  cell,
+  color,
+  todayYear,
+  today,
+  lines,
+}: {
+  cell: Cell;
+  color: string;
+  todayYear: number;
+  today: ISODate;
+  lines: number;
+}) {
   const c = useColors();
   const { entry, state, date, year } = cell;
   const meta = date ? `${relativeYears(year, todayYear)} · ${weekdayKo(date)}` : undefined;
@@ -117,9 +152,9 @@ function CellView({ cell, color, todayYear, today }: { cell: Cell; color: string
         variant={state === 'today' ? 'now' : 'past'}
         onPress={() => router.push({ pathname: '/entry', params: { date } })}>
         {entry.kind === 'memo' ? (
-          <T kind="small" numberOfLines={2}>기억 메모 · {entry.text}</T>
+          <T kind="small" numberOfLines={lines}>기억 메모 · {entry.text}</T>
         ) : (
-          <T numberOfLines={2}>{entry.text || '(사진과 태그만 남긴 날)'}</T>
+          <T numberOfLines={lines}>{entry.text || '(사진과 태그만 남긴 날)'}</T>
         )}
         {entry.tags.length ? (
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 4 }}>

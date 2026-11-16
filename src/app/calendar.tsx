@@ -6,6 +6,7 @@ import { useApp, useDb } from '@/app-context';
 import { Chip, Screen, T } from '@/components/ui';
 import { getWrittenDates } from '@/lib/db';
 import { BACKFILL_DAYS, cellState, dayOf, monthMatrix, monthOf, yearIndexInCycle, yearOf, type ISODate } from '@/lib/dates';
+import { MAX_WIDTH } from '@/hooks/use-layout';
 import { fonts, space, useColors } from '@/theme';
 
 const WEEK = ['일', '월', '화', '수', '목', '금', '토'];
@@ -32,7 +33,7 @@ export default function CalendarScreen() {
   };
 
   return (
-    <Screen edges={[]}>
+    <Screen edges={[]} maxWidth={MAX_WIDTH.narrow}>
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
         <T kind="title">
           {ym.y}년 {ym.m}월

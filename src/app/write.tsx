@@ -11,6 +11,7 @@ import { deleteEntry, getEntry, saveEntry, setCustomQuestion, tagFrequencies } f
 import { cellState, formatKo, isLocked, mdOf, weekdayKo, yearIndexInCycle, yearOf } from '@/lib/dates';
 import { pageCells, questionFor } from '@/lib/diary';
 import { deletePhoto, pickPhoto } from '@/lib/photos';
+import { MAX_WIDTH } from '@/hooks/use-layout';
 import { fonts, radius, space, useColors } from '@/theme';
 
 const SOFT_LIMIT = 300;
@@ -122,7 +123,7 @@ export default function WriteScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: c.bg }} edges={['top', 'bottom']}>
-      <View style={[styles.header, { borderColor: c.line }]}>
+      <View style={[styles.header, styles.column, { borderColor: c.line }]}>
         <Pressable onPress={close} hitSlop={10}>
           <T color={c.ink3}>닫기</T>
         </Pressable>
@@ -134,7 +135,7 @@ export default function WriteScreen() {
         </Pressable>
       </View>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <ScrollView contentContainerStyle={{ padding: space.lg, gap: space.lg, paddingBottom: 60 }} keyboardShouldPersistTaps="handled">
+        <ScrollView contentContainerStyle={[styles.column, { padding: space.lg, gap: space.lg, paddingBottom: 60 }]} keyboardShouldPersistTaps="handled">
           {date < today ? (
             <Chip label={isMemo ? `${formatKo(date)}의 기억 메모 · 그날 쓴 기록과 구분돼요` : '나중에 씀 표시가 붙어요'} color={c.years[0]} />
           ) : null}
@@ -283,6 +284,8 @@ export default function WriteScreen() {
 }
 
 const styles = StyleSheet.create({
+  // Keeps the editor at a comfortable line length on tablets and desktop browsers.
+  column: { width: '100%', maxWidth: MAX_WIDTH.reading, alignSelf: 'center' },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',

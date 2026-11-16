@@ -1,17 +1,18 @@
 import { router } from 'expo-router';
-import { View, useWindowDimensions } from 'react-native';
+import { View } from 'react-native';
 
 import { useApp, useDb } from '@/app-context';
 import { RingChart } from '@/components/ring-chart';
 import { Button, Card, Chip, Screen, T } from '@/components/ui';
 import { getAllEntries, type Entry } from '@/lib/db';
 import { addDays, CYCLE_YEARS, cycleIndex, cycleRange, currentDiaryYear, diffDays, mdOf, monthOf, yearIndexInCycle } from '@/lib/dates';
+import { MAX_WIDTH, useLayout } from '@/hooks/use-layout';
 import { fonts, space, useColors } from '@/theme';
 
 export default function RingsScreen() {
   const { start, today } = useApp();
   const c = useColors();
-  const { width } = useWindowDimensions();
+  const { width, height, isWide, isLandscape, columnGap } = useLayout();
   const entries = useDb(getAllEntries, []);
 
   const cycle = cycleIndex(start, today);
@@ -47,24 +48,35 @@ export default function RingsScreen() {
   const topTags = [...tagCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 3);
   const longest = thisYear.reduce<Entry | null>((a, e) => (!a || e.text.length > a.text.length ? e : a), null);
 
-  const size = Math.min(width - 32, 380);
+  // Side by side only when there is room for a decent ring next to the stats
+  // (desktop, landscape); portrait tablets stack a large ring above them instead.
+  const twoColumn = isWide && (width >= 1000 || isLandscape);
+  const size = twoColumn
+    ? Math.max(220, Math.min((Math.min(width, MAX_WIDTH.wide) - 64) / 2, height - 160, 520))
+    : Math.min(width - 32, isWide ? 520 : 380);
 
-  return (
-    <Screen>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-        <T kind="title">나의 나이테</T>
-        <T kind="small">{cycle > 0 ? `${cycle + 1}번째 다섯 해 · ` : ''}{year.index + 1}년째</T>
-      </View>
-      <View style={{ alignItems: 'center' }}>
-        <RingChart
-          size={size}
-          start={start}
-          today={today}
-          written={written}
-          onPressDate={(d) => router.navigate({ pathname: '/', params: { date: d } })}
-        />
-      </View>
+  const titleRow = (
+    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+      <T kind="title">나의 나이테</T>
+      <T kind="small">{cycle > 0 ? `${cycle + 1}번째 다섯 해 · ` : ''}{year.index + 1}년째</T>
+    </View>
+  );
+
+  const ring = (
+    <View style={{ alignItems: 'center', gap: space.sm }}>
+      <RingChart
+        size={size}
+        start={start}
+        today={today}
+        written={written}
+        onPressDate={(d) => router.navigate({ pathname: '/', params: { date: d } })}
+      />
       <T kind="small" style={{ textAlign: 'center' }}>안쪽이 첫해, 바깥이 다섯째 해예요. 원을 누르면 그 날짜로 이동해요.</T>
+    </View>
+  );
+
+  const stats = (
+    <>
       <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
         {perYear.map((n, k) => (
           <View key={k} style={{ alignItems: 'center' }}>
@@ -106,13 +118,31 @@ export default function RingsScreen() {
         ) : null}
       </Card>
 
-      <View style={{ flexDirection: 'row', gap: space.sm }}>
-        <Button title="달력으로 보기" variant="ghost" style={{ flex: 1 }} onPress={() => router.push('/calendar')} />
-      </View>
+      <Button title="달력으로 보기" variant="ghost" onPress={() => router.push('/calendar')} />
       {cycle > 0 ? <Chip label={`이전 다섯 해의 기록 ${entries.length - inCycle.length}일은 보관돼 있어요`} selected={false} /> : null}
       <T kind="small" style={{ fontFamily: fonts.mono, textAlign: 'center' }}>
         {range.from.replaceAll('-', '.')} — {range.to.replaceAll('-', '.')}
       </T>
+    </>
+  );
+
+  if (twoColumn) {
+    return (
+      <Screen maxWidth={MAX_WIDTH.wide}>
+        {titleRow}
+        <View style={{ flexDirection: 'row', gap: columnGap, alignItems: 'flex-start' }}>
+          <View style={{ flex: 1, minWidth: 0 }}>{ring}</View>
+          <View style={{ flex: 1, gap: space.md, minWidth: 0 }}>{stats}</View>
+        </View>
+      </Screen>
+    );
+  }
+
+  return (
+    <Screen>
+      {titleRow}
+      {ring}
+      {stats}
     </Screen>
   );
 }

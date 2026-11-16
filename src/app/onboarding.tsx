@@ -8,6 +8,7 @@ import { CYCLE_YEARS, addDays, addYears, diffDays, logicalToday, pad2, yearOf } 
 import { ensurePermission, rescheduleAll } from '@/lib/notifications';
 import { clearPasscode } from '@/lib/passcode';
 import type { QuestionMode } from '@/lib/settings';
+import { MAX_WIDTH } from '@/hooks/use-layout';
 import { fonts, radius, space, useColors } from '@/theme';
 
 export default function Onboarding() {
@@ -55,7 +56,7 @@ export default function Onboarding() {
   if (settings.onboarded && !finished) return <Redirect href="/" />;
 
   return (
-    <Screen edges={['top', 'bottom']} contentStyle={{ paddingTop: space.xl, gap: space.lg, flexGrow: 1 }}>
+    <Screen edges={['top', 'bottom']} contentStyle={{ paddingTop: space.xl, gap: space.lg, flexGrow: 1 }} maxWidth={MAX_WIDTH.narrow}>
       <T kind="small">{step + 1} / 3</T>
 
       {step === 0 ? (

@@ -9,6 +9,7 @@ import { overlapWords } from '@/lib/analysis';
 import { countEntriesBetween, getEntry, getWrittenDates } from '@/lib/db';
 import { currentDiaryYear, formatKo, yearIndexInCycle } from '@/lib/dates';
 import { pageCells } from '@/lib/diary';
+import { MAX_WIDTH } from '@/hooks/use-layout';
 import { space, useColors } from '@/theme';
 
 const ORDINAL = ['첫', '두', '세', '네', '다섯'];
@@ -17,7 +18,7 @@ export default function SavedScreen() {
   const { date } = useLocalSearchParams<{ date: string }>();
   const { start, today } = useApp();
   const c = useColors();
-  const { width } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
   const [anim] = useState(() => new Animated.Value(0));
 
   useEffect(() => {
@@ -46,14 +47,14 @@ export default function SavedScreen() {
   }, [date, start, today, c.years]);
 
   const k = yearIndexInCycle(start, date);
-  const size = Math.min(width - 96, 300);
+  const size = Math.min(width - 96, height * 0.42, 340);
   const message =
     data.layers === 2
       ? `처음으로 ${formatKo(date)}에\n두 겹이 생겼어요`
       : `${ORDINAL[k]} 번째 나이테에\n${formatKo(date)}이 새겨졌어요`;
 
   return (
-    <Screen edges={['top', 'bottom']} contentStyle={{ alignItems: 'stretch', paddingTop: space.xl }}>
+    <Screen edges={['top', 'bottom']} maxWidth={MAX_WIDTH.narrow} contentStyle={{ alignItems: 'stretch', paddingTop: space.xl }}>
       <Animated.View
         style={{
           alignSelf: 'center',

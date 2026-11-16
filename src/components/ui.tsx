@@ -1,32 +1,41 @@
-import type { ReactNode } from 'react';
+import { Children, Fragment, isValidElement, type ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, Switch, Text, View, type StyleProp, type TextStyle, type ViewStyle } from 'react-native';
 import { SafeAreaView, type Edge } from 'react-native-safe-area-context';
 
+import { MAX_WIDTH, useLayout } from '@/hooks/use-layout';
 import { fonts, radius, space, useColors } from '@/theme';
 
+/**
+ * Page wrapper. On wide screens the content is centred at `maxWidth`
+ * so lines and cards stay a readable size on tablets and desktop browsers.
+ */
 export function Screen({
   children,
   scroll = true,
   edges = ['top'],
   contentStyle,
+  maxWidth = MAX_WIDTH.reading,
 }: {
   children: ReactNode;
   scroll?: boolean;
   edges?: Edge[];
   contentStyle?: StyleProp<ViewStyle>;
+  maxWidth?: number;
 }) {
   const c = useColors();
+  const { isWide } = useLayout();
+  const frame: ViewStyle = { width: '100%', maxWidth, alignSelf: 'center', paddingTop: isWide ? space.xl : space.md };
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: c.bg }} edges={edges}>
       {scroll ? (
         <ScrollView
-          contentContainerStyle={[styles.content, contentStyle]}
+          contentContainerStyle={[styles.content, frame, contentStyle]}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="interactive">
           {children}
         </ScrollView>
       ) : (
-        <View style={[styles.content, { flex: 1 }, contentStyle]}>{children}</View>
+        <View style={[styles.content, frame, { flex: 1 }, contentStyle]}>{children}</View>
       )}
     </SafeAreaView>
   );
@@ -169,3 +178,27 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', paddingVertical: 13, borderBottomWidth: StyleSheet.hairlineWidth, gap: space.md },
   step: { width: 36, height: 36, borderRadius: 18, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
 });
+
+function flatten(children: ReactNode): ReactNode[] {
+  return Children.toArray(children).flatMap((child) =>
+    isValidElement(child) && child.type === Fragment ? flatten((child.props as { children?: ReactNode }).children) : [child],
+  );
+}
+
+/**
+ * Stacks its children on phones. With `two`, deals them alternately into two
+ * independent columns, so cards of different heights don't leave gaps between rows.
+ */
+export function Columns({ two, gap, children }: { two: boolean; gap: number; children: ReactNode }) {
+  const items = flatten(children);
+  if (!two) return <View style={{ gap }}>{items}</View>;
+  return (
+    <View style={{ flexDirection: 'row', gap, alignItems: 'flex-start' }}>
+      {[0, 1].map((col) => (
+        <View key={col} style={{ flex: 1, gap, minWidth: 0 }}>
+          {items.filter((_, i) => i % 2 === col)}
+        </View>
+      ))}
+    </View>
+  );
+}
