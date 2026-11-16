@@ -28,9 +28,13 @@
 | 도구 | 여는 방법 |
 |---|---|
 | Android Studio | `npm install` 후 `android/` 폴더를 열기. Gradle 동기화가 끝나면 ▶ 실행 |
-| Xcode (Mac) | `npm install` → `cd ios && pod install` → `ios/app.xcworkspace` 열기 (`.xcodeproj`가 아니라 `.xcworkspace`). 실기기 실행은 Signing & Capabilities에서 Team을 고르기 |
+| Xcode (Mac) | `npm install` → `npm run ios:open` (`pod install` 후 `ios/app.xcworkspace`를 엶). 직접 열 때도 `.xcodeproj`가 아니라 `.xcworkspace`를 여세요. 실기기 실행은 Signing & Capabilities에서 Team을 고르기 |
+
+iOS는 React Native를 미리 빌드된 파일로 받지 않고 소스에서 빌드합니다(`app.json`의 `expo-build-properties` → `ios.buildReactNativeFromSource`). 회사망이나 VPN에서 `pod install`이 `React-Core-prebuilt` 다운로드에서 멈추는 문제를 피하려는 설정입니다. 대신 Xcode 첫 빌드가 10~20분 더 걸립니다. 다운로드가 잘 되는 환경이면 이 값을 지우고 prebuild를 다시 실행하면 빨라집니다.
 
 두 도구 모두 개발용 JS 번들을 받아오려면 터미널에서 `npx expo start`를 먼저 켜 두세요. 또는 `npm run android` / `npm run ios`로 빌드와 실행을 한 번에 할 수 있습니다.
+
+`app.xcodeproj`만 열면 빌드되지 않습니다. React Native와 대부분의 Expo 모듈이 CocoaPods로만 연결되고, CocoaPods는 `pod install` 때 만드는 `app.xcworkspace`를 통해서만 프로젝트에 붙습니다.
 
 `app.json`에서 이름·아이콘·권한·플러그인 같은 네이티브 설정을 바꿨다면 `npx expo prebuild --platform all --no-install`로 프로젝트 파일에 반영하고 그 변경을 커밋하세요. 네이티브 폴더를 직접 고친 뒤에는 `--clean`을 쓰지 마세요. 직접 고친 내용이 지워집니다.
 
