@@ -59,6 +59,14 @@
             "image": "./assets/images/splash-icon.png"
           }
         }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "buildReactNativeFromSource": true
+          }
+        }
       ]
     ],
     "experiments": {
