@@ -7,6 +7,7 @@ import { Button, Card, Chip, Screen, Section, Stepper, T } from '@/components/ui
 import { addAnniversary, deleteAnniversary, getAnniversaries } from '@/lib/db';
 import { addDays, dayOf, logicalToday, mdOf, monthOf, pad2 } from '@/lib/dates';
 import { rescheduleAll } from '@/lib/notifications';
+import { MAX_WIDTH } from '@/hooks/use-layout';
 import { radius, space, useColors } from '@/theme';
 
 const RANGE_DAYS = 7;
@@ -31,7 +32,7 @@ export default function AnniversariesScreen() {
     });
 
   return (
-    <Screen edges={[]}>
+    <Screen edges={[]} maxWidth={MAX_WIDTH.narrow}>
       <T kind="small">해마다 돌아오는 날을 기억해 두면, 그날 아침 9시에 지난 기록과 함께 알려드려요.</T>
       {list.length ? (
         <Card>

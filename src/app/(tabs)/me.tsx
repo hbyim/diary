@@ -10,6 +10,7 @@ import { shareTextFile } from '@/lib/export-file';
 import { ensurePermission, rescheduleAll } from '@/lib/notifications';
 import { clearPasscode } from '@/lib/passcode';
 import { deleteAllPhotos } from '@/lib/photos';
+import { MAX_WIDTH } from '@/hooks/use-layout';
 import { radius, space, useColors } from '@/theme';
 
 const IS_WEB = Platform.OS === 'web';
@@ -42,7 +43,7 @@ export default function MeScreen() {
   };
 
   return (
-    <Screen>
+    <Screen maxWidth={MAX_WIDTH.narrow}>
       <T kind="title">나</T>
 
       <Card>
@@ -162,7 +163,7 @@ export default function MeScreen() {
 
       {msg ? <T kind="small" color={c.accent}>{msg}</T> : null}
       <T kind="small" style={{ textAlign: 'center', marginTop: space.lg }}>
-        나이테 1.0 · 모든 기록은 {IS_WEB ? '이 브라우저' : '이 기기'} 안에만 저장돼요
+        나이테 1.1 · 모든 기록은 {IS_WEB ? '이 브라우저' : '이 기기'} 안에만 저장돼요
       </T>
     </Screen>
   );

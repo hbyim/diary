@@ -64,13 +64,9 @@ function Root() {
   );
 }
 
-/** On the web demo, keep the app at phone width in the middle of the screen. */
+/** On the web, fill the browser window; each screen sizes and centres its own content. */
 function WebFrame({ children }: { children: React.ReactNode }) {
   const c = useColors();
   if (Platform.OS !== 'web') return <>{children}</>;
-  return (
-    <View style={{ flex: 1, backgroundColor: c.surface2, alignItems: 'center' }}>
-      <View style={{ flex: 1, width: '100%', maxWidth: 480, backgroundColor: c.bg, overflow: 'hidden' }}>{children}</View>
-    </View>
-  );
+  return <View style={{ flex: 1, backgroundColor: c.bg }}>{children}</View>;
 }
