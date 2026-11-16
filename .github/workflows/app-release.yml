@@ -1,0 +1,106 @@
+name: App builds (GitHub Releases)
+
+# Builds an installable Android APK and an iOS Simulator app on GitHub's runners.
+# - Pull requests: build only, files are attached to the run as artifacts.
+# - Manual run on main, or a pushed tag like v1.0.0: also publishes a GitHub Release.
+# Store builds (TestFlight / Google Play) use release.yml with EAS instead.
+on:
+  pull_request:
+  workflow_dispatch:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+concurrency:
+  group: app-builds-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.ver.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - run: npm ci
+      - id: ver
+        run: echo "version=$(node -p "require('./app.json').expo.version")" >> "$GITHUB_OUTPUT"
+      # Each CI build gets a higher versionCode so a newer APK installs over an older one.
+      - run: node -e "const f='app.json',j=require('./'+f);j.expo.android.versionCode=Number(process.env.RUN);require('fs').writeFileSync(f,JSON.stringify(j,null,2))"
+        env:
+          RUN: ${{ github.run_number }}
+      - run: npx expo prebuild --platform android --no-install
+      - name: Build release APK
+        working-directory: android
+        run: ./gradlew assembleRelease --no-daemon
+      - run: cp android/app/build/outputs/apk/release/app-release.apk naite-${{ steps.ver.outputs.version }}-android.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android-apk
+          path: naite-*-android.apk
+
+  ios-simulator:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+      - run: npm ci
+      - run: npx expo prebuild --platform ios
+      - name: Build for iOS Simulator (unsigned)
+        working-directory: ios
+        run: |
+          xcodebuild -workspace app.xcworkspace -scheme app -configuration Release \
+            -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath build CODE_SIGNING_ALLOWED=NO | tail -n 40
+          test -d build/Build/Products/Release-iphonesimulator/app.app
+      - run: |
+          VERSION=$(node -p "require('./app.json').expo.version")
+          cd ios/build/Build/Products/Release-iphonesimulator
+          zip -qry "$GITHUB_WORKSPACE/naite-$VERSION-ios-simulator.zip" app.app
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ios-simulator
+          path: naite-*-ios-simulator.zip
+
+  release:
+    if: github.event_name != 'pull_request' && always() && needs.android.result == 'success'
+    needs: [android, ios-simulator]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: out
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || format('v{0}', needs.android.outputs.version) }}
+          target_commitish: ${{ github.sha }}
+          name: 나이테 ${{ needs.android.outputs.version }}
+          make_latest: true
+          files: out/*
+          body: |
+            ## 설치 방법
+
+            **Android**: 아래 `naite-…-android.apk`를 휴대폰에서 내려받아 열면 설치돼요. 처음이면 "출처를 알 수 없는 앱 설치"를 허용해 주세요.
+
+            **iPhone**: Apple 서명이 없는 빌드라 iPhone에는 바로 설치할 수 없어요. `naite-…-ios-simulator.zip`은 Mac의 iOS 시뮬레이터용이에요 (압축을 풀고 `app.app`을 시뮬레이터 창에 끌어다 놓기). 실제 iPhone 배포는 TestFlight로 해요 (`docs/DEVELOPMENT.md` 3절).
+
+            **웹 체험판**: https://hbyim.github.io/diary/
+
+            빌드 커밋: ${{ github.sha }}
