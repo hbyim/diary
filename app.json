@@ -1,0 +1,80 @@
+{
+  "expo": {
+    "name": "나이테",
+    "slug": "naite",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "naite",
+    "userInterfaceStyle": "automatic",
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ],
+    "ios": {
+      "bundleIdentifier": "com.hbyim.naite",
+      "buildNumber": "1",
+      "supportsTablet": false,
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "package": "com.hbyim.naite",
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "backgroundColor": "#F3F5F6",
+        "foregroundImage": "./assets/images/android-icon-foreground.png",
+        "backgroundImage": "./assets/images/android-icon-background.png",
+        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "plugins": [
+      "expo-router",
+      "expo-sqlite",
+      [
+        "expo-notifications",
+        {
+          "color": "#2C5A8E"
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "하루를 대표하는 사진 한 장을 기록에 붙이기 위해 사진 보관함에 접근해요.",
+          "cameraPermission": false,
+          "microphonePermission": false
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#F3F5F6",
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 120,
+          "dark": {
+            "backgroundColor": "#0E1216",
+            "image": "./assets/images/splash-icon.png"
+          }
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true,
+      "baseUrl": "/diary"
+    },
+    "web": {
+      "output": "single",
+      "favicon": "./assets/images/favicon.png",
+      "name": "나이테",
+      "shortName": "나이테",
+      "lang": "ko",
+      "themeColor": "#2C5A8E",
+      "backgroundColor": "#F3F5F6",
+      "description": "같은 날짜 위에 다섯 해를 겹쳐 쓰는 다이어리"
+    }
+  }
+}
