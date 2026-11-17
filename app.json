@@ -2,7 +2,7 @@
   "expo": {
     "name": "나이테",
     "slug": "naite",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "orientation": "default",
     "icon": "./assets/images/icon.png",
     "scheme": "naite",
