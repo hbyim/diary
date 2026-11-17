@@ -28,7 +28,7 @@
         <key>CFBundleURLSchemes</key>
         <array>
           <string>naite</string>
-          <string>com.hbyim.naite</string>
+          <string>com.hbyimok.naite</string>
         </array>
       </dict>
     </array>

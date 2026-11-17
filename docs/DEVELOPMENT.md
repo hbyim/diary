@@ -79,7 +79,7 @@ iPad와 가로 회전을 지원합니다(`app.json`의 `ios.supportsTablet`, `or
 
 1. **Expo 계정** 만들기 → 로컬에서 `npx eas-cli@latest login` → `npx eas-cli@latest init`  
    `app.json`에 `extra.eas.projectId`가 추가됩니다. 이 변경을 커밋하세요.
-2. **Apple Developer Program** 가입(연 USD 99) → App Store Connect에서 번들 ID `com.hbyim.naite`로 앱 생성.  
+2. **Apple Developer Program** 가입(연 USD 99) → App Store Connect에서 번들 ID `com.hbyimok.naite`로 앱 생성 (Android 패키지 이름은 `com.hbyim.naite`로 iOS와 다름).  
    `npx eas-cli@latest credentials -p ios`로 인증서·프로비저닝 프로파일을 EAS에 등록하고, 제출용 App Store Connect API 키를 등록합니다.
 3. **Google Play Console** 가입(1회 USD 25) → 패키지 `com.hbyim.naite`로 앱 생성.  
    Google은 **첫 AAB 업로드를 콘솔에서 직접** 해야 합니다(`eas build -p android --profile production` 결과물). 이후 자동 제출용 서비스 계정 JSON 키를 만들어 `npx eas-cli@latest credentials -p android`로 등록합니다.
