@@ -118,7 +118,7 @@ export default function RingsScreen() {
         ) : null}
       </Card>
 
-      <Button title="달력으로 보기" variant="ghost" onPress={() => router.push('/calendar')} />
+      <Button title="달력으로 보기" variant="ghost" onPress={() => router.navigate('/')} />
       {cycle > 0 ? <Chip label={`이전 다섯 해의 기록 ${entries.length - inCycle.length}일은 보관돼 있어요`} selected={false} /> : null}
       <T kind="small" style={{ fontFamily: fonts.mono, textAlign: 'center' }}>
         {range.from.replaceAll('-', '.')} — {range.to.replaceAll('-', '.')}

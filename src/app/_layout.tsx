@@ -55,7 +55,6 @@ function Root() {
           <Stack.Screen name="write" options={{ presentation: 'modal' }} />
           <Stack.Screen name="saved" options={{ presentation: 'modal', gestureEnabled: true }} />
           <Stack.Screen name="entry" options={{ ...detail, title: '' }} />
-          <Stack.Screen name="calendar" options={{ ...detail, title: '달력' }} />
           <Stack.Screen name="anniversaries" options={{ ...detail, title: '나의 연례 행사' }} />
           <Stack.Screen name="passcode" options={{ presentation: 'modal' }} />
         </Stack>

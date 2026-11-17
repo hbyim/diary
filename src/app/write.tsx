@@ -6,11 +6,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useApp } from '@/app-context';
 import { MoodPicker, TagEditor } from '@/components/diary-bits';
+import { WeatherPicker } from '@/components/weather';
+import { WeekStrip } from '@/components/week-strip';
 import { Button, Chip, T } from '@/components/ui';
 import { deleteEntry, getEntry, saveEntry, setCustomQuestion, tagFrequencies } from '@/lib/db';
 import { cellState, formatKo, isLocked, mdOf, weekdayKo, yearIndexInCycle, yearOf } from '@/lib/dates';
 import { pageCells, questionFor } from '@/lib/diary';
 import { deletePhoto, pickPhoto } from '@/lib/photos';
+import { WEATHER_LABELS, type Weather } from '@/lib/weather';
 import { MAX_WIDTH } from '@/hooks/use-layout';
 import { fonts, radius, space, useColors } from '@/theme';
 
@@ -30,6 +33,7 @@ export default function WriteScreen() {
   const [text, setText] = useState(existing?.text ?? '');
   const [tags, setTags] = useState<string[]>(existing?.tags ?? []);
   const [mood, setMood] = useState<number | null>(existing?.mood ?? null);
+  const [weather, setWeather] = useState<Weather | null>(existing?.weather ?? null);
   const [photo, setPhoto] = useState<string | null>(existing?.photo ?? null);
   const [question, setQuestion] = useState(existing?.question || questionFor(md, settings.questionMode));
   const [editingQ, setEditingQ] = useState(false);
@@ -57,7 +61,7 @@ export default function WriteScreen() {
     return [...new Set([...sameDay, ...tagFrequencies().map((t) => t.tag)])];
   }, [others]);
 
-  const hasContent = text.trim().length > 0 || tags.length > 0 || mood !== null || photo !== null;
+  const hasContent = text.trim().length > 0 || tags.length > 0 || mood !== null || photo !== null || weather !== null;
 
   const [saveError, setSaveError] = useState<string | null>(null);
 
@@ -70,6 +74,7 @@ export default function WriteScreen() {
       question,
       text: isMemo ? text.trim().slice(0, MEMO_LIMIT) : text,
       mood: isMemo ? null : mood,
+      weather: isMemo ? null : weather,
       tags: isMemo ? [] : tags,
       photo: isMemo ? null : photo,
         late: date < today,
@@ -92,7 +97,7 @@ export default function WriteScreen() {
     const t = setTimeout(persist, 700);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [text, tags, mood, photo]);
+  }, [text, tags, mood, photo, weather]);
 
   const touch =
     <T,>(set: (v: T) => void) =>
@@ -136,6 +141,7 @@ export default function WriteScreen() {
       </View>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={[styles.column, { padding: space.lg, gap: space.lg, paddingBottom: 60 }]} keyboardShouldPersistTaps="handled">
+          <WeekStrip date={date} />
           {date < today ? (
             <Chip label={isMemo ? `${formatKo(date)}의 기억 메모 · 그날 쓴 기록과 구분돼요` : '나중에 씀 표시가 붙어요'} color={c.years[0]} />
           ) : null}
@@ -185,13 +191,22 @@ export default function WriteScreen() {
             </Pressable>
           )}
 
+          {!isMemo ? (
+            <View style={{ gap: space.sm }}>
+              <T kind="label">오늘 날씨</T>
+              <WeatherPicker value={weather} onChange={touch(setWeather)} />
+            </View>
+          ) : null}
+
           {!isMemo && peek ? (
             <Pressable
               onPress={() => setPeekOpen((v) => !v)}
               style={[styles.peek, { borderColor: c.line }]}
               accessibilityState={{ expanded: peekOpen }}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                <T kind="small">{peek.year}년의 답 보기</T>
+                <T kind="small">
+                  {peek.year}년의 답 보기{peek.entry!.weather ? ` · 그날은 ${WEATHER_LABELS[peek.entry!.weather]}` : ''}
+                </T>
                 <T kind="small">{peekOpen ? '접기 ▴' : '펼치기 ▾'}</T>
               </View>
               {peekOpen ? <T color={c.ink2}>{peek.entry!.text}</T> : null}
