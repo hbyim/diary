@@ -87,9 +87,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace 'com.hbyim.naite'
+    namespace 'com.hbyimok.naite'
     defaultConfig {
-        applicationId 'com.hbyim.naite'
+        applicationId 'com.hbyimok.naite'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
