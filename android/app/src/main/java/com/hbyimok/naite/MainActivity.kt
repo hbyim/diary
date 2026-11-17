@@ -1,4 +1,4 @@
-package com.hbyim.naite
+package com.hbyimok.naite
 import expo.modules.splashscreen.SplashScreenManager
 
 import android.os.Build
