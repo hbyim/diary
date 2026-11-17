@@ -13,7 +13,7 @@
       "web"
     ],
     "ios": {
-      "bundleIdentifier": "com.hbyim.naite",
+      "bundleIdentifier": "com.hbyimok.naite",
       "buildNumber": "1",
       "supportsTablet": true,
       "infoPlist": {
