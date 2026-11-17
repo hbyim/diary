@@ -91,10 +91,31 @@ jobs:
     needs: [android, ios-simulator]
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
           path: out
           merge-multiple: true
+      # Release notes: docs/releases/v<version>.md (if present) followed by install instructions.
+      - name: Write release notes
+        env:
+          VERSION: ${{ needs.android.outputs.version }}
+        run: |
+          {
+            if [ -f "docs/releases/v$VERSION.md" ]; then cat "docs/releases/v$VERSION.md"; echo; fi
+            cat <<'NOTES'
+          ## 설치 방법
+
+          **Android**: 아래 `naite-…-android.apk`를 휴대폰에서 내려받아 열면 설치돼요. 처음이면 "출처를 알 수 없는 앱 설치"를 허용해 주세요.
+
+          **iPhone**: Apple 서명이 없는 빌드라 iPhone에는 바로 설치할 수 없어요. `naite-…-ios-simulator.zip`은 Mac의 iOS 시뮬레이터용이에요 (압축을 풀고 `app.app`을 시뮬레이터 창에 끌어다 놓기). 실제 iPhone 배포는 TestFlight로 해요 (`docs/DEVELOPMENT.md` 4절).
+
+          **웹 체험판**: https://hbyim.github.io/diary/
+          NOTES
+            echo
+            echo "빌드 커밋: $GITHUB_SHA"
+          } | sed 's/^          //' > release-notes.md
+          cat release-notes.md
       - uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || format('v{0}', needs.android.outputs.version) }}
@@ -102,13 +123,4 @@ jobs:
           name: 나이테 ${{ needs.android.outputs.version }}
           make_latest: true
           files: out/*
-          body: |
-            ## 설치 방법
-
-            **Android**: 아래 `naite-…-android.apk`를 휴대폰에서 내려받아 열면 설치돼요. 처음이면 "출처를 알 수 없는 앱 설치"를 허용해 주세요.
-
-            **iPhone**: Apple 서명이 없는 빌드라 iPhone에는 바로 설치할 수 없어요. `naite-…-ios-simulator.zip`은 Mac의 iOS 시뮬레이터용이에요 (압축을 풀고 `app.app`을 시뮬레이터 창에 끌어다 놓기). 실제 iPhone 배포는 TestFlight로 해요 (`docs/DEVELOPMENT.md` 4절).
-
-            **웹 체험판**: https://hbyim.github.io/diary/
-
-            빌드 커밋: ${{ github.sha }}
+          body_path: release-notes.md
