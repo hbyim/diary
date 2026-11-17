@@ -48,7 +48,7 @@ export default function TabsLayout() {
         tabBarStyle: { backgroundColor: c.surface, borderTopColor: c.line },
         sceneStyle: { backgroundColor: c.bg },
       }}>
-      <Tabs.Screen name="index" options={{ title: '오늘', tabBarIcon: ({ color }) => <TabIcon name="today" color={color} /> }} />
+      <Tabs.Screen name="index" options={{ title: '달력', tabBarIcon: ({ color }) => <TabIcon name="today" color={color} /> }} />
       <Tabs.Screen name="rings" options={{ title: '나이테', tabBarIcon: ({ color }) => <TabIcon name="rings" color={color} /> }} />
       <Tabs.Screen name="discover" options={{ title: '발견', tabBarIcon: ({ color }) => <TabIcon name="discover" color={color} /> }} />
       <Tabs.Screen name="me" options={{ title: '나', tabBarIcon: ({ color }) => <TabIcon name="me" color={color} /> }} />

@@ -1,6 +1,7 @@
 import * as SQLite from 'expo-sqlite';
 
 import { mdOf, yearOf, type ISODate, type MonthDay } from './dates';
+import { toWeather, type Weather } from './weather';
 
 /**
  * Local-first storage. Every record lives in one SQLite file on the device
@@ -52,6 +53,8 @@ const MIGRATIONS: string[] = [
     value       TEXT NOT NULL
   );
   `,
+  // 2: the day's weather, picked by the writer (sun | partly | cloud | rain | snow | wind).
+  `ALTER TABLE entries ADD COLUMN weather TEXT;`,
 ];
 
 export function migrate() {
@@ -81,6 +84,7 @@ export type Entry = {
   question: string;
   text: string;
   mood: number | null;
+  weather: Weather | null;
   tags: string[];
   photo: string | null;
   late: boolean;
@@ -88,7 +92,8 @@ export type Entry = {
   updatedAt: number;
 };
 
-type EntryRow = Omit<Entry, 'tags' | 'late' | 'writtenAt' | 'updatedAt'> & {
+type EntryRow = Omit<Entry, 'tags' | 'late' | 'writtenAt' | 'updatedAt' | 'weather'> & {
+  weather: string | null;
   tags: string;
   late: number;
   written_at: number;
@@ -108,6 +113,7 @@ function fromRow(r: EntryRow): Entry {
     question: r.question,
     text: r.text,
     mood: r.mood,
+    weather: toWeather(r.weather),
     tags,
     photo: r.photo,
     late: !!r.late,
@@ -135,11 +141,15 @@ export function getAllEntries(): Entry[] {
   return db.getAllSync<EntryRow>('SELECT * FROM entries ORDER BY date').map(fromRow);
 }
 
+export type WrittenDate = { date: ISODate; kind: EntryKind; late: boolean; weather: Weather | null };
+
 /** Lightweight list of written dates for the ring and calendar. */
-export function getWrittenDates(): { date: ISODate; kind: EntryKind; late: boolean }[] {
+export function getWrittenDates(): WrittenDate[] {
   return db
-    .getAllSync<{ date: string; kind: EntryKind; late: number }>('SELECT date, kind, late FROM entries ORDER BY date')
-    .map((r) => ({ date: r.date, kind: r.kind, late: !!r.late }));
+    .getAllSync<{ date: string; kind: EntryKind; late: number; weather: string | null }>(
+      'SELECT date, kind, late, weather FROM entries ORDER BY date',
+    )
+    .map((r) => ({ date: r.date, kind: r.kind, late: !!r.late, weather: toWeather(r.weather) }));
 }
 
 export function countEntriesBetween(from: ISODate, to: ISODate): number {
@@ -158,6 +168,7 @@ export type EntryInput = {
   question: string;
   text: string;
   mood: number | null;
+  weather: Weather | null;
   tags: string[];
   photo: string | null;
   late: boolean;
@@ -166,10 +177,10 @@ export type EntryInput = {
 /** Inserts or updates; keeps the original `written_at` so the 7-day lock starts at the first save. */
 export function saveEntry(input: EntryInput, now = Date.now()) {
   db.runSync(
-    `INSERT INTO entries (date, md, year, kind, question, text, mood, tags, photo, late, written_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `INSERT INTO entries (date, md, year, kind, question, text, mood, weather, tags, photo, late, written_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(date) DO UPDATE SET
-       kind = excluded.kind, question = excluded.question, text = excluded.text, mood = excluded.mood,
+       kind = excluded.kind, question = excluded.question, text = excluded.text, mood = excluded.mood, weather = excluded.weather,
        tags = excluded.tags, photo = excluded.photo, updated_at = excluded.updated_at`,
     input.date,
     mdOf(input.date),
@@ -178,6 +189,7 @@ export function saveEntry(input: EntryInput, now = Date.now()) {
     input.question,
     input.text,
     input.mood,
+    input.weather,
     JSON.stringify(input.tags),
     input.photo,
     input.late ? 1 : 0,

@@ -28,9 +28,9 @@ Expo Go에는 이 앱이 쓰는 네이티브 모듈이 모두 들어 있어서 `
 
 | 탭/화면 | 파일 |
 |---|---|
-| 오늘 (한 날짜의 다섯 칸) | `src/app/(tabs)/index.tsx` |
+| 달력 (첫 탭: 위는 한 달 달력, 아래는 고른 날의 기록·날씨·다른 해) | `src/app/(tabs)/index.tsx` |
 | 나이테 (5년 원형 지도·통계) | `src/app/(tabs)/rings.tsx` |
 | 발견 (같은 날 비교·반복 태그·기분) | `src/app/(tabs)/discover.tsx` |
 | 나 (알림·질문·잠금·내보내기·초기화) | `src/app/(tabs)/me.tsx` |
 | 쓰기 / 저장 직후 / 지난 기록·답장 | `src/app/write.tsx`, `saved.tsx`, `entry.tsx` |
-| 달력·놓친 날 / 연례 행사 / 비밀번호 / 온보딩 | `src/app/calendar.tsx`, `anniversaries.tsx`, `passcode.tsx`, `onboarding.tsx` |
+| 연례 행사 / 비밀번호 / 온보딩 | `src/app/anniversaries.tsx`, `passcode.tsx`, `onboarding.tsx` |

@@ -5,9 +5,10 @@
  * browser's localStorage instead of SQLite. Data stays in that browser only.
  */
 import { mdOf, yearOf, type ISODate, type MonthDay } from './dates';
-import type { Anniversary, Entry, EntryInput, EntryKind, Reply } from './db';
+import type { Anniversary, Entry, EntryInput, Reply, WrittenDate } from './db';
+import { toWeather } from './weather';
 
-export type { Anniversary, Entry, EntryInput, EntryKind, Reply } from './db';
+export type { Anniversary, Entry, EntryInput, EntryKind, Reply, WrittenDate } from './db';
 
 const KEY = 'naite.web.v1';
 
@@ -46,12 +47,14 @@ function persist() {
 export function migrate() {}
 
 const byDate = (a: { date: string }, b: { date: string }) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0);
-const all = () => Object.values(store.entries).sort(byDate);
+// Entries saved before the weather field existed have none.
+const all = () => Object.values(store.entries).map((e) => ({ ...e, weather: toWeather(e.weather) })).sort(byDate);
 
 /* ---------- entries ---------- */
 
 export function getEntry(date: ISODate): Entry | null {
-  return store.entries[date] ?? null;
+  const e = store.entries[date];
+  return e ? { ...e, weather: toWeather(e.weather) } : null;
 }
 
 export function getEntriesByMd(md: MonthDay): Entry[] {
@@ -66,8 +69,8 @@ export function getAllEntries(): Entry[] {
   return all();
 }
 
-export function getWrittenDates(): { date: ISODate; kind: EntryKind; late: boolean }[] {
-  return all().map((e) => ({ date: e.date, kind: e.kind, late: e.late }));
+export function getWrittenDates(): WrittenDate[] {
+  return all().map((e) => ({ date: e.date, kind: e.kind, late: e.late, weather: e.weather }));
 }
 
 export function countEntriesBetween(from: ISODate, to: ISODate): number {

@@ -5,6 +5,7 @@ import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 
 import { useApp, useDb } from '@/app-context';
 import { MOOD_LABELS } from '@/components/diary-bits';
+import { WeatherBadge } from '@/components/weather';
 import { Button, Card, Chip, Screen, T } from '@/components/ui';
 import { addAnniversary, addReply, deleteReply, getEntry, getReplies } from '@/lib/db';
 import { EDIT_WINDOW_DAYS, formatKo, isLocked, mdOf, weekdayKo, yearIndexInCycle, yearOf } from '@/lib/dates';
@@ -49,7 +50,10 @@ export default function EntryScreen() {
         <T kind="small">
           {yearOf(date)} · {weekdayKo(date)}요일{entry.late ? ' · 나중에 씀' : ''}
         </T>
-        <T kind="display" color={color}>{formatKo(date)}</T>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.sm, flexWrap: 'wrap' }}>
+          <T kind="display" color={color}>{formatKo(date)}</T>
+          {entry.weather ? <WeatherBadge kind={entry.weather} /> : null}
+        </View>
       </View>
       {entry.question && entry.kind === 'entry' ? <T kind="question" color={c.ink2}>{entry.question}</T> : null}
       {entry.photo ? <Image source={{ uri: entry.photo }} style={styles.photo} contentFit="cover" accessibilityLabel={`${date}의 사진`} /> : null}
