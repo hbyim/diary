@@ -88,12 +88,21 @@ android {
     compileSdk rootProject.ext.compileSdkVersion
 
     namespace 'com.hbyimok.naite'
+    // @naite/with-android-abi-splits
+    splits {
+        abi {
+            enable project.hasProperty('naiteAbiSplits')
+            reset()
+            include 'arm64-v8a', 'armeabi-v7a'
+            universalApk false
+        }
+    }
     defaultConfig {
         applicationId 'com.hbyimok.naite'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
-        versionName "1.2.0"
+        versionName "1.2.1"
 
         buildConfigField "String", "REACT_NATIVE_RELEASE_LEVEL", "\"${findProperty('reactNativeReleaseLevel') ?: 'stable'}\""
     }

@@ -2,7 +2,7 @@
   "expo": {
     "name": "나이테",
     "slug": "naite",
-    "version": "1.2.0",
+    "version": "1.2.1",
     "orientation": "default",
     "icon": "./assets/images/icon.png",
     "scheme": "naite",
@@ -65,10 +65,14 @@
         {
           "ios": {
             "buildReactNativeFromSource": true
+          },
+          "android": {
+            "useLegacyPackaging": true
           }
         }
       ],
-      "./plugins/with-ios-hermes-from-source"
+      "./plugins/with-ios-hermes-from-source",
+      "./plugins/with-android-abi-splits"
     ],
     "experiments": {
       "typedRoutes": true,

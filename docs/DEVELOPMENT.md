@@ -108,12 +108,14 @@ iPad와 가로 회전을 지원합니다(`app.json`의 `ios.supportsTablet`, `or
 
 | 파일 | 내용 |
 |---|---|
-| `naite-<버전>-android.apk` | Android 폰에 바로 설치할 수 있는 APK (React Native 기본 디버그 키로 서명) |
+| `naite-<버전>-android-arm64.apk` | Android 폰에 바로 설치할 수 있는 APK. 요즘 폰 대부분(64비트)용 (React Native 기본 디버그 키로 서명) |
+| `naite-<버전>-android-armv7.apk` | 오래된 32비트 Android 폰용 |
 | `naite-<버전>-ios-simulator.zip` | Mac의 iOS 시뮬레이터용 앱. Apple 서명이 없어서 실제 iPhone에는 설치되지 않음 |
 
 - PR을 열면 두 파일을 빌드만 하고, 실행 결과의 Artifacts에 첨부합니다.
 - Actions → **App builds (GitHub Releases)** → Run workflow(main)를 실행하거나 `v1.0.1` 같은 태그를 푸시하면 Release를 만들어 파일을 올립니다. 수동 실행의 태그 이름은 `app.json`의 `version`을 따르므로, 새 Release를 만들려면 버전을 먼저 올리세요. 이때 `docs/releases/v<버전>.md`를 만들어 두면 그 내용이 Release 설명 맨 위에 들어갑니다.
 - Android 패키지 이름은 v1.1.0 이후 `com.hbyim.naite`에서 `com.hbyimok.naite`로 바뀌었습니다. 패키지 이름이 다르면 다른 앱으로 취급되므로, 예전 APK(v1.0.0, v1.1.0)를 설치했다면 새 APK는 그 위에 덮어 설치되지 않고 따로 설치됩니다. 예전 앱의 기록은 옮겨지지 않으니 필요하면 예전 앱의 ‘나 → 기록 내보내기’로 먼저 백업하세요.
+- APK 크기를 줄이려고 CPU 종류별로 따로 만들고(`plugins/with-android-abi-splits.js`, Release 빌드에서만 `-PnaiteAbiSplits=true`로 켬) 네이티브 라이브러리를 압축합니다(`useLegacyPackaging`). 로컬 빌드는 예전처럼 APK 하나가 나옵니다. Play 스토어용 AAB는 스토어가 기기별로 나눠 주므로 이 설정과 상관없습니다.
 - APK는 Play 스토어 앱과 서명 키가 다릅니다. 나중에 Play 스토어 버전을 설치하려면 APK 버전을 먼저 지워야 합니다.
 - 실제 iPhone에 설치하려면 Apple Developer 계정으로 TestFlight를 거쳐야 합니다(아래 EAS 절차).
 
