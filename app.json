@@ -65,10 +65,14 @@
         {
           "ios": {
             "buildReactNativeFromSource": true
+          },
+          "android": {
+            "useLegacyPackaging": true
           }
         }
       ],
-      "./plugins/with-ios-hermes-from-source"
+      "./plugins/with-ios-hermes-from-source",
+      "./plugins/with-android-abi-splits"
     ],
     "experiments": {
       "typedRoutes": true,
