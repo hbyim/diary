@@ -163,7 +163,7 @@ export default function MeScreen() {
 
       {msg ? <T kind="small" color={c.accent}>{msg}</T> : null}
       <T kind="small" style={{ textAlign: 'center', marginTop: space.lg }}>
-        나이테 1.2 · 모든 기록은 {IS_WEB ? '이 브라우저' : '이 기기'} 안에만 저장돼요
+        나이테 1.2.1 · 모든 기록은 {IS_WEB ? '이 브라우저' : '이 기기'} 안에만 저장돼요
       </T>
     </Screen>
   );
